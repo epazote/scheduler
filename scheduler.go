@@ -7,15 +7,16 @@ import (
 	"time"
 )
 
+// Scheduler map of schedulers
+type Scheduler struct {
+	Schedulers map[string]scheduler
+	sync.Mutex
+}
+
 type scheduler struct {
 	t    <-chan time.Time
 	quit chan struct{}
 	f    func()
-}
-
-type Scheduler struct {
-	Schedulers map[string]scheduler
-	sync.Mutex
 }
 
 // NewScheduler returns a new scheduler
