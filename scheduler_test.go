@@ -26,7 +26,27 @@ func TestScheduler(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		sk.StopAll()
 	}
-	if c.Get() != 3 {
-		t.Error("Expecting 3")
+	if c.Get() <= 1 {
+		t.Error("Expecting c > 0")
+	}
+}
+
+func TestStopError(t *testing.T) {
+	sk := New()
+	c := &count{}
+	sk.AddScheduler("print", 1, func() { fmt.Println(c.Get()); c.Add(1) })
+	err := sk.Stop("none")
+	if err == nil {
+		t.Error("Expecint error")
+	}
+}
+
+func TestStop(t *testing.T) {
+	sk := New()
+	c := &count{}
+	sk.AddScheduler("print", 1, func() { fmt.Println(c.Get()); c.Add(1) })
+	err := sk.Stop("print")
+	if err != nil {
+		t.Error(err)
 	}
 }
