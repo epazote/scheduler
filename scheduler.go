@@ -19,7 +19,7 @@ type scheduler struct {
 	f    func()
 }
 
-// NewScheduler returns a new scheduler
+// New returns a new scheduler
 func New() *Scheduler {
 	return &Scheduler{
 		Schedulers: make(map[string]scheduler),
