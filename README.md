@@ -29,7 +29,7 @@ func main() {
         // Let scheduler run for five seconds
         time.Sleep(5 * time.Second)
 
-        // Stop the sceduled "every second" function
+        // Stop the scheduled "every second" function
         err := s.Stop("every second")
         if err != nil {
                 panic(err)
