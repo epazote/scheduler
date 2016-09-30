@@ -3,3 +3,39 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/epazote/scheduler)](https://goreportcard.com/report/github.com/epazote/scheduler)
 
 Calls a function every N seconds.
+
+Example
+-------
+
+```
+package main
+
+import (
+        "fmt"
+        "time"
+
+        "github.com/epazote/scheduler"
+)
+
+func main() {
+        // Create new scheduler
+        s := scheduler.New()
+
+        // Add a scheduled function
+        s.AddScheduler("every second", 1, func() {
+                fmt.Println("Second passed")
+        })
+
+        // Let scheduler run for five seconds
+        time.Sleep(5 * time.Second)
+
+        // Stop the sceduled "every second" function
+        err := s.Stop("every second")
+        if err != nil {
+                panic(err)
+        }
+
+        // Scheduler has now stopped
+        time.Sleep(5 * time.Second)
+}
+```
