@@ -7,7 +7,7 @@ Calls a function every N `time.Duration`
 Example
 -------
 
-```
+```go
 package main
 
 import (
