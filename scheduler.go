@@ -9,9 +9,9 @@ import (
 
 // scheduler private struct
 type scheduler struct {
-	t    <-chan time.Time
-	quit chan struct{}
 	f    func()
+	quit chan struct{}
+	t    *time.Ticker
 }
 
 // Scheduler map of schedulers
@@ -24,33 +24,35 @@ func New() *Scheduler {
 	return &Scheduler{}
 }
 
-// AddScheduler calls a function every X seconds.
-func (s *Scheduler) AddScheduler(name string, interval int, f func()) {
-	e := time.Duration(interval) * time.Second
-
+// AddScheduler calls a function every X defined interval
+func (s *Scheduler) AddScheduler(name string, interval time.Duration, f func()) {
 	// create a new scheduler
 	task := scheduler{
-		t:    time.NewTicker(e).C,
-		quit: make(chan struct{}),
 		f:    f,
+		quit: make(chan struct{}),
+		t:    time.NewTicker(interval),
 	}
 
-	// stop scheduler if exist or add a new one
-	if sk, ok := s.LoadOrStore(name, task); ok {
+	// stop scheduler if exist
+	if sk, ok := s.Load(name); ok {
 		close(sk.(scheduler).quit)
 	}
 
-	// Create the scheduler in a goroutine running forever until it quits
-	go func(s scheduler) {
+	// add a new task
+	s.Store(name, task)
+
+	// create the scheduler in a goroutine running forever until it quits
+	go func() {
 		for {
 			select {
-			case <-s.t:
-				s.f()
-			case <-s.quit:
+			case <-task.t.C:
+				task.f()
+			case <-task.quit:
+				task.t.Stop()
 				return
 			}
 		}
-	}(task)
+	}()
 }
 
 // Stop ends a specified scheduler.
@@ -60,6 +62,7 @@ func (s *Scheduler) Stop(name string) error {
 		return fmt.Errorf("Scheduler: %s, does not exist.", name)
 	}
 	close(sk.(scheduler).quit)
+	s.Delete(name)
 	return nil
 }
 
