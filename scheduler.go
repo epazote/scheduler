@@ -55,7 +55,7 @@ func (s *Scheduler) AddScheduler(name string, interval time.Duration, f func()) 
 	}()
 }
 
-// Stop ends a specified scheduler.
+// Stop ends and delete a specified scheduler.
 func (s *Scheduler) Stop(name string) error {
 	sk, ok := s.Load(name)
 	if !ok {
@@ -71,6 +71,7 @@ func (s *Scheduler) StopAll() {
 	close := func(key, value interface{}) bool {
 		close(value.(scheduler).quit)
 		log.Printf("Stoping: %s", key)
+		s.Delete(key)
 		return true
 	}
 	s.Range(close)

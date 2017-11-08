@@ -2,7 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/epazote/scheduler/badge.svg?branch=master)](https://coveralls.io/github/epazote/scheduler?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/epazote/scheduler)](https://goreportcard.com/report/github.com/epazote/scheduler)
 
-Calls a function every N seconds.
+Calls a function every N `time.Duration`
 
 Example
 -------
@@ -21,8 +21,9 @@ func main() {
         // Create new scheduler
         s := scheduler.New()
 
+        every := time.Second
         // Add a scheduled function
-        s.AddScheduler("every second", 1, func() {
+        s.AddScheduler("every second", every, func() {
                 fmt.Println("Second passed")
         })
 

@@ -24,7 +24,7 @@ func (c *count) Get() int64 {
 func TestScheduler(t *testing.T) {
 	sk := New()
 	c := &count{}
-	sk.AddScheduler("print", 1, func() { fmt.Println(c.Get()); c.Add(1) })
+	sk.AddScheduler("print", time.Second, func() { fmt.Println(c.Get()); c.Add(1) })
 	select {
 	case <-time.After(3 * time.Second):
 		sk.StopAll()
@@ -32,12 +32,19 @@ func TestScheduler(t *testing.T) {
 	if c.Get() <= 1 {
 		t.Error("Expecting c > 0")
 	}
+	every := time.Millisecond
+	sk.AddScheduler("print", every, func() { fmt.Println(c.Get()); c.Add(1) })
+	time.Sleep(2 * time.Millisecond)
+	if c.Get() < 1 {
+		t.Fatalf("Expecting c > 0, got: %v", c.Get())
+	}
+	sk.StopAll()
 }
 
 func TestStopError(t *testing.T) {
 	sk := New()
 	c := &count{}
-	sk.AddScheduler("print", 1, func() { fmt.Println(c.Get()); c.Add(1) })
+	sk.AddScheduler("print", 1, func() { c.Add(1) })
 	err := sk.Stop("none")
 	if err == nil {
 		t.Error("Expecting error")
@@ -47,24 +54,24 @@ func TestStopError(t *testing.T) {
 func TestStop(t *testing.T) {
 	sk := New()
 	c := &count{}
-	sk.AddScheduler("print", 1, func() { fmt.Println(c.Get()); c.Add(1) })
+	sk.AddScheduler("print", time.Second, func() { c.Add(1) })
 	err := sk.Stop("print")
 	if err != nil {
 		t.Error(err)
 	}
 }
 
-func TestLoadOrStore(t *testing.T) {
+func TestIfExistStop(t *testing.T) {
 	sk := New()
 	c := &count{}
 	interval := time.Millisecond
-	sk.AddScheduler("print", interval, func() { fmt.Println(c.Get()); c.Add(1) })
+	sk.AddScheduler("print", interval, func() { c.Add(1) })
 	time.Sleep(2 * time.Millisecond)
 	if c.Get() < 1 {
 		t.Fatalf("Expecting c > 0, got: %v", c.Get())
 	}
-	sk.AddScheduler("print", interval, func() { fmt.Println(c.Get()); c.Del(1) })
-	time.Sleep(4 * time.Millisecond)
+	sk.AddScheduler("print", interval, func() { c.Del(1) })
+	time.Sleep(3 * time.Millisecond)
 	if c.Get() > 0 {
 		t.Fatalf("Expecting c < 0, got: %v", c.Get())
 	}
