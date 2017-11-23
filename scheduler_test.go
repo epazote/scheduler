@@ -81,3 +81,20 @@ func TestIfExistStop(t *testing.T) {
 	}
 	sk.StopAll()
 }
+
+func TestWait2Finish(t *testing.T) {
+	sk := New()
+	c := &count{}
+	interval := time.Millisecond
+	sk.AddScheduler("print", interval, func() {
+		c.Add(1)
+		time.Sleep(time.Minute)
+	})
+	select {
+	case <-time.After(1 * time.Second):
+		sk.StopAll()
+	}
+	if c.Get() > 2 {
+		t.Fatalf("Expecting c > 0, got: %v", c.Get())
+	}
+}
